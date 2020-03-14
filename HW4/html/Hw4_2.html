@@ -1,0 +1,449 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Hw4_2</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-03-06"><meta name="DC.source" content="Hw4_2.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">start rearrange data and fit</a></li><li><a href="#3">modeling in svd data and non svd data</a></li><li><a href="#5">plot</a></li></ul></div><pre class="codeinput">clear <span class="string">all</span>; close <span class="string">all</span>; clc;
+<span class="comment">% Same operations like the test 1, but we change the class to differetnt artist in same genre.</span>
+
+<span class="comment">% Load music data, sort and reduce sampleling rate.</span>
+<span class="comment">% Section out 5 seconds music data from each artist's song.</span>
+<span class="comment">% Artists :"Dr.dre", "Snoop Dogg","Tupac" ;</span>
+<span class="comment">% 5 songs for each artist.</span>
+
+tic
+<span class="comment">% Read folder and file name.</span>
+flist = dir(<span class="string">"music"</span>);
+fname = {flist.name};
+fname = fname(~strncmp(fname, <span class="string">'.'</span>, 1));
+
+<span class="comment">% Data aquare, format and reduce for each song.</span>
+musicAll = [];
+lables = [];
+Aname = [<span class="string">"Dr.Dre"</span>, <span class="string">"Snoop Dogg"</span>,<span class="string">"2pac"</span>];
+
+<span class="keyword">for</span> h = 1:length(Aname)
+    localAname = Aname(h);
+   <span class="comment">% using artist name to sort song</span>
+    tf = startsWith(fname,localAname,<span class="string">'IgnoreCase'</span>,true);
+    target = fname(tf);
+    <span class="keyword">for</span> i = 1:length(target)
+        <span class="comment">% load song</span>
+        localsname = string(target(i));
+        [music,Fs] = audioread(strcat (<span class="string">"music\"</span>,localsname));
+
+        <span class="comment">%lower sampling rate 1/10</span>
+        Fs = Fs/10;
+        music = music(1:10:end,:);
+
+        <span class="comment">%convert to mono tone; skip if already mono tone.</span>
+        musicSize = size(music);
+        musicSize = musicSize(2);
+        <span class="keyword">if</span> musicSize == 1
+            Mmono = music;
+        <span class="keyword">else</span>
+            Mmono = zeros(length(music),1);
+            <span class="keyword">for</span> j = 1:length(music)
+                <span class="keyword">if</span>(music(j,1) == 0 || music(j,2) == 0)
+                    Mmono(j,1) = max(music(j,:));
+                <span class="keyword">else</span>
+                    Mmono(j,1) = (music(j,1)+music(j,2))/2;
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        <span class="comment">% remove zeros on head and tail</span>
+        Mhead = find(Mmono,1,<span class="string">"first"</span>);
+        Mtail = find(Mmono,1,<span class="string">"last"</span>);
+        Mmono = Mmono(Mhead:Mtail);
+
+        <span class="comment">% aquare 5 seconds clips from music; every 5sec one clip</span>
+        <span class="comment">% round music to n * 5 seconds</span>
+        Intervals = Fs*5;
+        sections = floor(length(Mmono)/(Fs*5));
+
+        Mmono = Mmono(1:(Intervals * sections),1);
+
+        data5s = reshape(Mmono, [Intervals,sections]);
+
+        musicAll = [musicAll,data5s];
+        lables = [lables; repmat(localAname,size(data5s,2),1)];
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+lables = lables.';
+trainlabel = lables;
+
+toc
+</pre><pre class="codeoutput">&#21382;&#26102; 11.015729 &#31186;&#12290;
+</pre><h2 id="2">start rearrange data and fit</h2><pre class="codeinput">tic
+<span class="comment">% svd data</span>
+[u,s,v] = svd(abs(fft(musicAll)),<span class="string">"econ"</span>);
+sig = diag(s);
+lambda = sig.^2;
+<span class="comment">% plot(cumsum(lambda /sum(lambda)),'bo')</span>
+utrunc = u(:, 1:226);
+traindata = utrunc'*musicAll;
+
+<span class="comment">%building test data set by selection rate of 1/10 from traindata set,</span>
+<span class="comment">%randomly selected.</span>
+
+sizen = floor(size(traindata,2)/(10));
+testnumber = randperm (size(traindata,2), sizen);
+
+testdata = traindata(:,testnumber);
+testlabel = trainlabel(:,testnumber);
+
+<span class="comment">%remove test data from train data set.</span>
+traindata(:,testnumber) = [];
+trainlabel(:,testnumber) = [];
+
+<span class="comment">%non svd train and test data sets.</span>
+nonSvdtraindata = abs(fft(musicAll));
+nonSvdtestdata = nonSvdtraindata(:,testnumber);
+<span class="comment">%remove test data from train data set.</span>
+nonSvdtraindata(:,testnumber) = [];
+
+toc
+</pre><pre class="codeoutput">&#21382;&#26102; 2.925688 &#31186;&#12290;
+</pre><h2 id="3">modeling in svd data and non svd data</h2><pre class="codeinput">tic
+<span class="comment">% Naive Bayes classifier modeling(svd data)</span>
+NBCModel = fitcnb(traindata.', trainlabel);
+NBCLoss = loss(NBCModel , testdata.', testlabel);
+
+svdDataTimeElapsed = toc;
+
+tic
+<span class="comment">% Naive Bayes classifier modeling(non svd data)</span>
+nonSvdNBCModel = fitcnb(nonSvdtraindata.', trainlabel);
+nonSvdNBCLoss = loss(nonSvdNBCModel , nonSvdtestdata.', testlabel);
+
+nonSvdDataTimeElapsed = toc;
+</pre><pre class="codeinput"><span class="comment">%LDA classifier modeling(svd data)</span>
+tic
+LDAtrainData = traindata.';
+LDAtrainlabel = trainlabel.';
+MdlLinear = fitcdiscr(LDAtrainData,LDAtrainlabel);
+Testclass = predict(MdlLinear,testdata.');
+ars = find(Testclass == testlabel.');
+LDA_SVDrate = length(ars)/length(testlabel);
+
+svdLDATimeElapsed = toc;
+
+<span class="comment">%LDA classifier modeling(non svd data)</span>
+tic
+LDAtrainData = nonSvdtraindata.';
+LDAtrainlabel = trainlabel.';
+MdlLinear = fitcdiscr(LDAtrainData,LDAtrainlabel);
+Testclass = predict(MdlLinear,nonSvdtestdata.');
+ars = find(Testclass == testlabel.');
+LDA_nonSVDrate = length(ars)/length(testlabel);
+
+nonSvdLDATimeElapsed = toc;
+</pre><h2 id="5">plot</h2><pre class="codeinput">subplot(1,2,1)
+b = bar(1-[NBCLoss,nonSvdNBCLoss]);
+xtips1 = b(1).XEndPoints;
+ytips1 = b(1).YEndPoints;
+labels1 = string(b(1).YData);
+ylim ([0, 1]) ;
+text(xtips1,ytips1,labels1,<span class="string">'HorizontalAlignment'</span>,<span class="string">'center'</span>,<span class="keyword">...</span>
+    <span class="string">'VerticalAlignment'</span>,<span class="string">'bottom'</span>)
+xticklabels ([<span class="string">"SVD-Data"</span>,<span class="string">"Non SVD-data"</span>]);
+ylabel (<span class="string">" Classification Accuracy ( Scale of 0 to 1) "</span>);
+xlabel (<span class="string">" Data Type "</span>);
+title (<span class="string">" Accuracy of Naive Bayes classifier Model of Three artists in Same Time &amp; Genres"</span>);
+grid <span class="string">on</span>
+subplot(1,2,2)
+b = bar([svdDataTimeElapsed;nonSvdDataTimeElapsed]);
+xtips1 = b(1).XEndPoints;
+ytips1 = b(1).YEndPoints;
+labels1 = string(b(1).YData);
+text(xtips1,ytips1,labels1,<span class="string">'HorizontalAlignment'</span>,<span class="string">'center'</span>,<span class="keyword">...</span>
+    <span class="string">'VerticalAlignment'</span>,<span class="string">'bottom'</span>)
+xticklabels ([<span class="string">"SVD-Data time"</span>,<span class="string">"Non SVD-data time"</span>]);
+ylabel (<span class="string">" Time(seconds) "</span>);
+xlabel (<span class="string">" Data Type "</span>);
+title (<span class="string">" Processing Time of Naive Bayes classifier Model of Three artists in Same Time &amp; Genres"</span>);
+
+figure(2)
+subplot(1,2,1)
+b = bar([LDA_SVDrate;LDA_nonSVDrate]);
+xtips1 = b(1).XEndPoints;
+ytips1 = b(1).YEndPoints;
+labels1 = string(b(1).YData);
+ylim ([0, 1]) ;
+text(xtips1,ytips1,labels1,<span class="string">'HorizontalAlignment'</span>,<span class="string">'center'</span>,<span class="keyword">...</span>
+    <span class="string">'VerticalAlignment'</span>,<span class="string">'bottom'</span>)
+xticklabels ([<span class="string">"SVD-Data"</span>,<span class="string">"Non SVD-data"</span>]);
+ylabel (<span class="string">" Classification Accuracy ( Scale of 0 to 1) "</span>);
+xlabel (<span class="string">" Data Type "</span>);
+title (<span class="string">" Accuracy of Linear discriminant analysis Model of Three artists in Same Time &amp; Genres"</span>);
+grid <span class="string">on</span>
+subplot(1,2,2)
+b = bar([svdLDATimeElapsed;nonSvdLDATimeElapsed]);
+xtips1 = b(1).XEndPoints;
+ytips1 = b(1).YEndPoints;
+labels1 = string(b(1).YData);
+text(xtips1,ytips1,labels1,<span class="string">'HorizontalAlignment'</span>,<span class="string">'center'</span>,<span class="keyword">...</span>
+    <span class="string">'VerticalAlignment'</span>,<span class="string">'bottom'</span>)
+xticklabels ([<span class="string">"SVD-Data time"</span>,<span class="string">"Non SVD-data time"</span>]);
+ylabel (<span class="string">" Time(seconds) "</span>);
+xlabel (<span class="string">" Data Type "</span>);
+title (<span class="string">" Processing Time of  Linear discriminant analysis Model of Three artists in Same Time &amp; Genres"</span>);
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+clear all; close all; clc;
+% Same operations like the test 1, but we change the class to differetnt artist in same genre.
+
+% Load music data, sort and reduce sampleling rate.
+% Section out 5 seconds music data from each artist's song.
+% Artists :"Dr.dre", "Snoop Dogg","Tupac" ;
+% 5 songs for each artist.
+
+tic
+% Read folder and file name.
+flist = dir("music");
+fname = {flist.name};
+fname = fname(~strncmp(fname, '.', 1));
+
+% Data aquare, format and reduce for each song.
+musicAll = [];
+lables = [];
+Aname = ["Dr.Dre", "Snoop Dogg","2pac"];
+
+for h = 1:length(Aname)
+    localAname = Aname(h);
+   % using artist name to sort song
+    tf = startsWith(fname,localAname,'IgnoreCase',true);
+    target = fname(tf);
+    for i = 1:length(target)
+        % load song
+        localsname = string(target(i));
+        [music,Fs] = audioread(strcat ("music\",localsname));
+        
+        %lower sampling rate 1/10
+        Fs = Fs/10;
+        music = music(1:10:end,:);
+        
+        %convert to mono tone; skip if already mono tone.
+        musicSize = size(music);
+        musicSize = musicSize(2);
+        if musicSize == 1
+            Mmono = music;
+        else
+            Mmono = zeros(length(music),1);
+            for j = 1:length(music)
+                if(music(j,1) == 0 || music(j,2) == 0)
+                    Mmono(j,1) = max(music(j,:));
+                else
+                    Mmono(j,1) = (music(j,1)+music(j,2))/2;
+                end 
+            end
+        end
+
+        % remove zeros on head and tail
+        Mhead = find(Mmono,1,"first");
+        Mtail = find(Mmono,1,"last");
+        Mmono = Mmono(Mhead:Mtail);
+        
+        % aquare 5 seconds clips from music; every 5sec one clip
+        % round music to n * 5 seconds
+        Intervals = Fs*5;
+        sections = floor(length(Mmono)/(Fs*5));
+        
+        Mmono = Mmono(1:(Intervals * sections),1);
+        
+        data5s = reshape(Mmono, [Intervals,sections]);
+       
+        musicAll = [musicAll,data5s];
+        lables = [lables; repmat(localAname,size(data5s,2),1)];
+    end
+end
+lables = lables.';
+trainlabel = lables;
+
+toc
+%% start rearrange data and fit
+tic
+% svd data
+[u,s,v] = svd(abs(fft(musicAll)),"econ");
+sig = diag(s);
+lambda = sig.^2;
+% plot(cumsum(lambda /sum(lambda)),'bo')
+utrunc = u(:, 1:226);
+traindata = utrunc'*musicAll;
+
+%building test data set by selection rate of 1/10 from traindata set,
+%randomly selected. 
+
+sizen = floor(size(traindata,2)/(10));
+testnumber = randperm (size(traindata,2), sizen);
+
+testdata = traindata(:,testnumber);
+testlabel = trainlabel(:,testnumber);
+
+%remove test data from train data set.
+traindata(:,testnumber) = [];
+trainlabel(:,testnumber) = [];
+
+%non svd train and test data sets. 
+nonSvdtraindata = abs(fft(musicAll));
+nonSvdtestdata = nonSvdtraindata(:,testnumber);
+%remove test data from train data set.
+nonSvdtraindata(:,testnumber) = [];
+
+toc
+%% modeling in svd data and non svd data
+tic
+% Naive Bayes classifier modeling(svd data)
+NBCModel = fitcnb(traindata.', trainlabel);
+NBCLoss = loss(NBCModel , testdata.', testlabel);
+
+svdDataTimeElapsed = toc;
+
+tic
+% Naive Bayes classifier modeling(non svd data)
+nonSvdNBCModel = fitcnb(nonSvdtraindata.', trainlabel);
+nonSvdNBCLoss = loss(nonSvdNBCModel , nonSvdtestdata.', testlabel);
+ 
+nonSvdDataTimeElapsed = toc;
+%%
+%LDA classifier modeling(svd data)
+tic
+LDAtrainData = traindata.';
+LDAtrainlabel = trainlabel.';
+MdlLinear = fitcdiscr(LDAtrainData,LDAtrainlabel);
+Testclass = predict(MdlLinear,testdata.');
+ars = find(Testclass == testlabel.');
+LDA_SVDrate = length(ars)/length(testlabel);
+
+svdLDATimeElapsed = toc;
+
+%LDA classifier modeling(non svd data)
+tic
+LDAtrainData = nonSvdtraindata.';
+LDAtrainlabel = trainlabel.';
+MdlLinear = fitcdiscr(LDAtrainData,LDAtrainlabel);
+Testclass = predict(MdlLinear,nonSvdtestdata.');
+ars = find(Testclass == testlabel.');
+LDA_nonSVDrate = length(ars)/length(testlabel);
+
+nonSvdLDATimeElapsed = toc;
+
+%% plot
+
+subplot(1,2,1)
+b = bar(1-[NBCLoss,nonSvdNBCLoss]);
+xtips1 = b(1).XEndPoints;
+ytips1 = b(1).YEndPoints;
+labels1 = string(b(1).YData);
+ylim ([0, 1]) ;
+text(xtips1,ytips1,labels1,'HorizontalAlignment','center',...
+    'VerticalAlignment','bottom')
+xticklabels (["SVD-Data","Non SVD-data"]);
+ylabel (" Classification Accuracy ( Scale of 0 to 1) "); 
+xlabel (" Data Type ");
+title (" Accuracy of Naive Bayes classifier Model of Three artists in Same Time & Genres");
+grid on
+subplot(1,2,2)
+b = bar([svdDataTimeElapsed;nonSvdDataTimeElapsed]);
+xtips1 = b(1).XEndPoints;
+ytips1 = b(1).YEndPoints;
+labels1 = string(b(1).YData);
+text(xtips1,ytips1,labels1,'HorizontalAlignment','center',...
+    'VerticalAlignment','bottom')
+xticklabels (["SVD-Data time","Non SVD-data time"]);
+ylabel (" Time(seconds) "); 
+xlabel (" Data Type ");
+title (" Processing Time of Naive Bayes classifier Model of Three artists in Same Time & Genres");
+
+figure(2)
+subplot(1,2,1)
+b = bar([LDA_SVDrate;LDA_nonSVDrate]);
+xtips1 = b(1).XEndPoints;
+ytips1 = b(1).YEndPoints;
+labels1 = string(b(1).YData);
+ylim ([0, 1]) ;
+text(xtips1,ytips1,labels1,'HorizontalAlignment','center',...
+    'VerticalAlignment','bottom')
+xticklabels (["SVD-Data","Non SVD-data"]);
+ylabel (" Classification Accuracy ( Scale of 0 to 1) "); 
+xlabel (" Data Type ");
+title (" Accuracy of Linear discriminant analysis Model of Three artists in Same Time & Genres");
+grid on
+subplot(1,2,2)
+b = bar([svdLDATimeElapsed;nonSvdLDATimeElapsed]);
+xtips1 = b(1).XEndPoints;
+ytips1 = b(1).YEndPoints;
+labels1 = string(b(1).YData);
+text(xtips1,ytips1,labels1,'HorizontalAlignment','center',...
+    'VerticalAlignment','bottom')
+xticklabels (["SVD-Data time","Non SVD-data time"]);
+ylabel (" Time(seconds) "); 
+xlabel (" Data Type ");
+title (" Processing Time of  Linear discriminant analysis Model of Three artists in Same Time & Genres");
+
+##### SOURCE END #####
+--></body></html>
