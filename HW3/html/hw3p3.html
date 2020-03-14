@@ -1,0 +1,535 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>hw3p3</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-02-21"><meta name="DC.source" content="hw3p3.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput">clear <span class="string">all</span>; close <span class="string">all</span>; clc
+load(<span class="string">'cam1_3.mat'</span>);
+load(<span class="string">'cam2_3.mat'</span>);
+load(<span class="string">'cam3_3.mat'</span>);
+numFrames1_3 = size(vidFrames1_3,4);
+numFrames2_3= size(vidFrames2_3,4);
+numFrames3_3= size(vidFrames3_3,4);
+</pre><pre class="codeinput"><span class="comment">%cam1-2</span>
+data1 = [];
+<span class="keyword">for</span> j = 1:numFrames1_3
+
+<span class="comment">%filter for section out other objects.</span>
+width = 50;
+filter = zeros(480,640);
+filter(300-2.6*width:1:300+2.6*width, 350-width:1:350+width) = 1;
+
+
+X1 = vidFrames1_3(:,:,:,j);
+figure(1)
+
+<span class="comment">%subplot(2,1,1),imshow(X1);</span>
+level = 0.95;
+X1b = im2bw(X1,level);
+
+X1b = double(X1b);
+X1b = X1b.*filter;
+
+
+<span class="comment">%subplot(2,1,2),imshow(X1b);</span>
+
+bw = bwlabel(X1b,4);
+stats = regionprops(bw, <span class="string">'BoundingBox'</span>, <span class="string">'Centroid'</span>);
+
+hold <span class="string">on</span>
+
+centerX = 0;
+centerY = 0;
+<span class="keyword">for</span> object = 1:length(stats)
+        <span class="comment">%bb = stats(object).BoundingBox;</span>
+        bc = stats(object).Centroid;
+        centerX = centerX+bc(1);
+        centerY = centerY+bc(2);
+        <span class="comment">%rectangle('Position',bb,'EdgeColor','r','LineWidth',2)</span>
+        <span class="comment">%plot(bc(1),bc(2), '-m+')</span>
+        <span class="comment">%a=text(bc(1)+15,bc(2), strcat('X: ', num2str(round(bc(1))), '    Y: ', num2str(round(bc(2)))));</span>
+        <span class="comment">%set(a, 'FontName', 'Arial', 'FontWeight', 'bold', 'FontSize', 12, 'Color', 'yellow');</span>
+<span class="keyword">end</span>
+
+
+
+hold <span class="string">off</span>
+
+centerX = centerX/length(stats);
+centerY = centerY/length(stats);
+
+data1 = [data1;centerX,centerY];
+
+
+
+
+<span class="keyword">end</span>
+
+
+plot(data1);
+</pre><img vspace="5" hspace="5" src="hw3p3_01.png" alt=""> <p>cam2-2</p><pre class="codeinput">data2 = [];
+<span class="keyword">for</span> j = 1:numFrames2_3
+<span class="comment">%filter for section out other objects.</span>
+width = 50;
+filter = zeros(480,640);
+filter(250-3.5*width:1:250+3.5*width, 290-1.6*width:1:290+1.6*width) = 1;
+
+
+X1 = vidFrames2_3(:,:,:,j);
+figure(1)
+
+<span class="comment">%subplot(2,1,1),imshow(X1);</span>
+level = 0.95;
+X1b = im2bw(X1,level);
+
+X1b = double(X1b);
+X1b = X1b.*filter;
+
+
+<span class="comment">%subplot(2,1,2),imshow(X1b);</span>
+
+bw = bwlabel(X1b,4);
+stats = regionprops(bw, <span class="string">'BoundingBox'</span>, <span class="string">'Centroid'</span>);
+
+hold <span class="string">on</span>
+
+centerX = 0;
+centerY = 0;
+<span class="keyword">for</span> object = 1:length(stats)
+        <span class="comment">%bb = stats(object).BoundingBox;</span>
+        bc = stats(object).Centroid;
+        centerX = centerX+bc(1);
+        centerY = centerY+bc(2);
+        <span class="comment">%rectangle('Position',bb,'EdgeColor','r','LineWidth',2)</span>
+        <span class="comment">%plot(bc(1),bc(2), '-m+')</span>
+        <span class="comment">%a=text(bc(1)+15,bc(2), strcat('X: ', num2str(round(bc(1))), '    Y: ', num2str(round(bc(2)))));</span>
+        <span class="comment">%set(a, 'FontName', 'Arial', 'FontWeight', 'bold', 'FontSize', 12, 'Color', 'yellow');</span>
+<span class="keyword">end</span>
+
+
+
+hold <span class="string">off</span>
+
+centerX = centerX/length(stats);
+centerY = centerY/length(stats);
+
+data2 = [data2;centerX,centerY];
+
+
+
+
+<span class="keyword">end</span>
+
+
+plot(data2);
+</pre><img vspace="5" hspace="5" src="hw3p3_02.png" alt=""> <p>cam3-2</p><pre class="codeinput">data3 = [];
+<span class="keyword">for</span> j = 1:numFrames3_3
+<span class="comment">%filter for section out other objects.</span>
+width = 50;
+filter = zeros(480,640);
+filter(250-1*width:1:250+2*width, 360-2.5*width:1:360+2.5*width) = 1;
+
+
+X1 = vidFrames3_3(:,:,:,j);
+figure(1)
+
+<span class="comment">%subplot(2,1,1),imshow(X1);</span>
+level = 0.95;
+X1b = im2bw(X1,level);
+
+X1b = double(X1b);
+X1b = X1b.*filter;
+
+
+<span class="comment">%subplot(2,1,2),imshow(X1b);</span>
+
+bw = bwlabel(X1b,4);
+stats = regionprops(bw, <span class="string">'BoundingBox'</span>, <span class="string">'Centroid'</span>);
+
+hold <span class="string">on</span>
+
+centerX = 0;
+centerY = 0;
+<span class="keyword">for</span> object = 1:length(stats)
+        <span class="comment">%bb = stats(object).BoundingBox;</span>
+        bc = stats(object).Centroid;
+        centerX = centerX+bc(1);
+        centerY = centerY+bc(2);
+        <span class="comment">%rectangle('Position',bb,'EdgeColor','r','LineWidth',2)</span>
+        <span class="comment">%plot(bc(1),bc(2), '-m+')</span>
+        <span class="comment">%a=text(bc(1)+15,bc(2), strcat('X: ', num2str(round(bc(1))), '    Y: ', num2str(round(bc(2)))));</span>
+        <span class="comment">%set(a, 'FontName', 'Arial', 'FontWeight', 'bold', 'FontSize', 12, 'Color', 'yellow');</span>
+<span class="keyword">end</span>
+
+
+
+hold <span class="string">off</span>
+
+centerX = centerX/length(stats);
+centerY = centerY/length(stats);
+
+data3 = [data3;centerX,centerY];
+
+
+<span class="keyword">end</span>
+
+
+plot(data3);
+</pre><img vspace="5" hspace="5" src="hw3p3_03.png" alt=""> <pre class="codeinput"><span class="comment">%clean and format datapoint</span>
+
+[M,I] = min(data1(1:25,2));
+data1  = data1(I:end,:);
+[M,I] = min(data2(1:25,2));
+data2  = data2(I:end,:);
+[M,I] = min(data3(1:25,1));
+data3  = data3(I:end,:);
+data3vter = [];
+data3vter(:,1) = data3(:,2);
+data3vter(:,2) = data3(:,1);
+
+
+data2 = data2(1:length(data3vter), :);
+data1 = data1(1:length(data3vter), :);
+
+
+figure(5)
+subplot(1,3,1), plot(data1);
+subplot(1,3,2), plot(data2);
+subplot(1,3,3), plot(data3vter);
+</pre><img vspace="5" hspace="5" src="hw3p3_04.png" alt=""> <pre class="codeinput">dataAll = [data1';data2';data3vter'];
+
+[m,n]=size(dataAll);
+mn=mean(dataAll,2);
+dataAll=dataAll-repmat(mn,1,n);
+
+[u,s,v]=svd(dataAll'/sqrt(n-1));
+lambda=diag(s).^2;
+Y= dataAll' * v;
+sig=diag(s);
+</pre><pre class="codeinput">figure()
+plot(1:6, lambda/sum(lambda), <span class="string">'rx'</span>, <span class="string">'Linewidth'</span>, 1);
+title(<span class="string">"Test 3: Level of each Diagonal Variance"</span>);
+xlabel(<span class="string">"Diagonal Variances"</span>);
+ylabel(<span class="string">"Level"</span>);
+
+figure()
+subplot(2,1,1)
+plot(1:214, dataAll(2,:),<span class="string">"r"</span>,1:214, dataAll(1,:),<span class="string">"blue"</span>,<span class="string">'Linewidth'</span>, 1)
+ylabel(<span class="string">"Displacement (pixels)"</span>);
+xlabel(<span class="string">"Time (frames)"</span>);
+title(<span class="string">"Test 3, Cam 1: Original displacement across Z axis and XY-plane"</span>);
+legend(<span class="string">"Z"</span>, <span class="string">"XY"</span>)
+
+subplot(2,1,2)
+plot(1:214, Y(:,1),<span class="string">'r'</span>,<span class="string">'Linewidth'</span>, 1)
+ylabel(<span class="string">"Displacement (pixels)"</span>);
+xlabel(<span class="string">"Time (frames)"</span>);
+title(<span class="string">"Test 3: Displacement of first principal component directions"</span>);
+saveas(gcf,<span class="string">'pcatest3.png'</span>)
+</pre><img vspace="5" hspace="5" src="hw3p3_05.png" alt=""> <img vspace="5" hspace="5" src="hw3p3_06.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+clear all; close all; clc
+load('cam1_3.mat');
+load('cam2_3.mat');
+load('cam3_3.mat');
+numFrames1_3 = size(vidFrames1_3,4);
+numFrames2_3= size(vidFrames2_3,4);
+numFrames3_3= size(vidFrames3_3,4);
+
+%%
+%cam1-2
+data1 = [];
+for j = 1:numFrames1_3
+    
+%filter for section out other objects.
+width = 50;
+filter = zeros(480,640);
+filter(300-2.6*width:1:300+2.6*width, 350-width:1:350+width) = 1;
+    
+    
+X1 = vidFrames1_3(:,:,:,j);
+figure(1)
+
+%subplot(2,1,1),imshow(X1);
+level = 0.95;
+X1b = im2bw(X1,level);
+
+X1b = double(X1b);
+X1b = X1b.*filter;
+
+
+%subplot(2,1,2),imshow(X1b);
+
+bw = bwlabel(X1b,4);
+stats = regionprops(bw, 'BoundingBox', 'Centroid');
+
+hold on
+
+centerX = 0;
+centerY = 0;
+for object = 1:length(stats)
+        %bb = stats(object).BoundingBox;
+        bc = stats(object).Centroid;
+        centerX = centerX+bc(1);
+        centerY = centerY+bc(2);
+        %rectangle('Position',bb,'EdgeColor','r','LineWidth',2)
+        %plot(bc(1),bc(2), '-m+')
+        %a=text(bc(1)+15,bc(2), strcat('X: ', num2str(round(bc(1))), '    Y: ', num2str(round(bc(2)))));
+        %set(a, 'FontName', 'Arial', 'FontWeight', 'bold', 'FontSize', 12, 'Color', 'yellow');
+end
+
+
+
+hold off
+
+centerX = centerX/length(stats);
+centerY = centerY/length(stats);
+
+data1 = [data1;centerX,centerY];
+
+
+
+
+end
+
+
+plot(data1);
+
+%%
+% cam2-2
+data2 = [];
+for j = 1:numFrames2_3
+%filter for section out other objects.
+width = 50;
+filter = zeros(480,640);
+filter(250-3.5*width:1:250+3.5*width, 290-1.6*width:1:290+1.6*width) = 1;
+    
+    
+X1 = vidFrames2_3(:,:,:,j);
+figure(1)
+
+%subplot(2,1,1),imshow(X1);
+level = 0.95;
+X1b = im2bw(X1,level);
+
+X1b = double(X1b);
+X1b = X1b.*filter;
+
+
+%subplot(2,1,2),imshow(X1b);
+
+bw = bwlabel(X1b,4);
+stats = regionprops(bw, 'BoundingBox', 'Centroid');
+
+hold on
+
+centerX = 0;
+centerY = 0;
+for object = 1:length(stats)
+        %bb = stats(object).BoundingBox;
+        bc = stats(object).Centroid;
+        centerX = centerX+bc(1);
+        centerY = centerY+bc(2);
+        %rectangle('Position',bb,'EdgeColor','r','LineWidth',2)
+        %plot(bc(1),bc(2), '-m+')
+        %a=text(bc(1)+15,bc(2), strcat('X: ', num2str(round(bc(1))), '    Y: ', num2str(round(bc(2)))));
+        %set(a, 'FontName', 'Arial', 'FontWeight', 'bold', 'FontSize', 12, 'Color', 'yellow');
+end
+
+
+
+hold off
+
+centerX = centerX/length(stats);
+centerY = centerY/length(stats);
+
+data2 = [data2;centerX,centerY];
+
+
+
+
+end
+
+
+plot(data2);
+
+
+
+
+%%
+% cam3-2
+data3 = [];
+for j = 1:numFrames3_3
+%filter for section out other objects.
+width = 50;
+filter = zeros(480,640);
+filter(250-1*width:1:250+2*width, 360-2.5*width:1:360+2.5*width) = 1;
+    
+    
+X1 = vidFrames3_3(:,:,:,j);
+figure(1)
+
+%subplot(2,1,1),imshow(X1);
+level = 0.95;
+X1b = im2bw(X1,level);
+
+X1b = double(X1b);
+X1b = X1b.*filter;
+
+
+%subplot(2,1,2),imshow(X1b);
+
+bw = bwlabel(X1b,4);
+stats = regionprops(bw, 'BoundingBox', 'Centroid');
+
+hold on
+
+centerX = 0;
+centerY = 0;
+for object = 1:length(stats)
+        %bb = stats(object).BoundingBox;
+        bc = stats(object).Centroid;
+        centerX = centerX+bc(1);
+        centerY = centerY+bc(2);
+        %rectangle('Position',bb,'EdgeColor','r','LineWidth',2)
+        %plot(bc(1),bc(2), '-m+')
+        %a=text(bc(1)+15,bc(2), strcat('X: ', num2str(round(bc(1))), '    Y: ', num2str(round(bc(2)))));
+        %set(a, 'FontName', 'Arial', 'FontWeight', 'bold', 'FontSize', 12, 'Color', 'yellow');
+end
+
+
+
+hold off
+
+centerX = centerX/length(stats);
+centerY = centerY/length(stats);
+
+data3 = [data3;centerX,centerY];
+
+
+end
+
+
+plot(data3);
+%%
+%clean and format datapoint
+
+[M,I] = min(data1(1:25,2));
+data1  = data1(I:end,:);
+[M,I] = min(data2(1:25,2));
+data2  = data2(I:end,:);
+[M,I] = min(data3(1:25,1));
+data3  = data3(I:end,:);
+data3vter = [];
+data3vter(:,1) = data3(:,2);
+data3vter(:,2) = data3(:,1);
+
+
+data2 = data2(1:length(data3vter), :);
+data1 = data1(1:length(data3vter), :);
+
+
+figure(5)
+subplot(1,3,1), plot(data1);
+subplot(1,3,2), plot(data2);
+subplot(1,3,3), plot(data3vter);
+
+
+
+%%
+dataAll = [data1';data2';data3vter'];
+
+[m,n]=size(dataAll); 
+mn=mean(dataAll,2); 
+dataAll=dataAll-repmat(mn,1,n); 
+
+[u,s,v]=svd(dataAll'/sqrt(n-1)); 
+lambda=diag(s).^2; 
+Y= dataAll' * v; 
+sig=diag(s);
+%%
+figure()
+plot(1:6, lambda/sum(lambda), 'rx', 'Linewidth', 1);
+title("Test 3: Level of each Diagonal Variance");
+xlabel("Diagonal Variances"); 
+ylabel("Level");
+
+figure()
+subplot(2,1,1)
+plot(1:214, dataAll(2,:),"r",1:214, dataAll(1,:),"blue",'Linewidth', 1)
+ylabel("Displacement (pixels)"); 
+xlabel("Time (frames)"); 
+title("Test 3, Cam 1: Original displacement across Z axis and XY-plane");
+legend("Z", "XY")
+
+subplot(2,1,2)
+plot(1:214, Y(:,1),'r','Linewidth', 1)
+ylabel("Displacement (pixels)"); 
+xlabel("Time (frames)"); 
+title("Test 3: Displacement of first principal component directions");
+saveas(gcf,'pcatest3.png')
+##### SOURCE END #####
+--></body></html>
